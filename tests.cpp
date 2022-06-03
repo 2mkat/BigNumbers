@@ -200,7 +200,7 @@ void testsFastSqr() {
         ssize_t N = 300;
         while (N-- > 0) {
             BigNum f(1000, true);
-            BigNum fFastSqur = f.fastSqr();
+            BigNum fFastSqur = f.FastSqr();
             BigNum fMulf = f * f;
             if (fFastSqur != fMulf) {
                 std::cout << "Failed test with: " << '\n';
@@ -215,7 +215,7 @@ void testsFastSqr() {
     {
         std::cout << "Test for random number with 2 length: " << '\n';
         BigNum f(2, true);
-        BigNum fFastSqr = f.fastSqr();
+        BigNum fFastSqr = f.FastSqr();
         BigNum fMulf = f * f;
         if (fMulf != fFastSqr) {
             std::cout << "Failed test with: " << '\n';
@@ -228,7 +228,7 @@ void testsFastSqr() {
     {
         std::cout << "Test for random number with 1 length: " << '\n';
         BigNum f(1, true);
-        BigNum fFastSqr = f.fastSqr();
+        BigNum fFastSqr = f.FastSqr();
         BigNum fMulf = f * f;
         if (fMulf != fFastSqr) {
             std::cout << "Failed test with: " << '\n';
@@ -241,7 +241,7 @@ void testsFastSqr() {
     {
         std::cout << "Test for random number with 0 length: " << '\n';
         BigNum f(0);
-        BigNum fFastSqr = f.fastSqr();
+        BigNum fFastSqr = f.FastSqr();
         BigNum fMulf = f * f;
         if (fMulf != fFastSqr) {
             std::cout << "Failed test with: " << '\n';
@@ -262,11 +262,11 @@ void testsFastSqr() {
         auto t1 = high_resolution_clock::now();
         for (size_t i = 0; i < N; ++i) {
             BigNum f(M, true);
-            BigNum fSqr = f.fastSqr();
+            BigNum fSqr = f.FastSqr();
         }
         auto t2 = high_resolution_clock::now();
         auto ms_int = duration_cast<milliseconds>(t2 - t1);
-        std::cout << "fastSqr: time taken for " << N << " numbers to square: " << ms_int.count() << '\n';
+        std::cout << "FastSqr: time taken for " << N << " numbers to square: " << ms_int.count() << '\n';
 
         t1 = high_resolution_clock::now();
         for (size_t i = 0; i < N; ++i) {
@@ -287,7 +287,7 @@ void testsFastSqr() {
             BigNum f;
             std::cin >> f;
 
-            BigNum fSqur = f.fastSqr();
+            BigNum fSqur = f.FastSqr();
             std::cout << fSqur << '\n';
         }
     }
@@ -306,7 +306,7 @@ void testsPow() {
 //            std::cout << "f: " << f << '\n';
 //            std::cout << "g: " << g << '\n';
 //
-//            BigNum fPower = f.power(g);
+//            BigNum fPower = f.Power(g);
 //            BigNum fStupidPower = f.stupidPow(g);
 //            if (fPower != fStupidPower) {
 //                std::cout << "Failed test with: " << '\n';
@@ -323,7 +323,7 @@ void testsPow() {
 //    {
 //        std::cout << "Test for random number with 2 length: " << '\n';
 //        BigNum f(2, true);
-//        BigNum fFastSqr = f.fastSqr();
+//        BigNum fFastSqr = f.FastSqr();
 //        BigNum fMulf = f * f;
 //        if (fMulf != fFastSqr) {
 //            std::cout << "Failed test with: " << '\n';
@@ -336,7 +336,7 @@ void testsPow() {
 //    {
 //        std::cout << "Test for random number with 1 length: " << '\n';
 //        BigNum f(1, true);
-//        BigNum fFastSqr = f.fastSqr();
+//        BigNum fFastSqr = f.FastSqr();
 //        BigNum fMulf = f * f;
 //        if (fMulf != fFastSqr) {
 //            std::cout << "Failed test with: " << '\n';
@@ -349,7 +349,7 @@ void testsPow() {
 //    {
 //        std::cout << "Test for random number with 0 length: " << '\n';
 //        BigNum f(0);
-//        BigNum fFastSqr = f.fastSqr();
+//        BigNum fFastSqr = f.FastSqr();
 //        BigNum fMulf = f * f;
 //        if (fMulf != fFastSqr) {
 //            std::cout << "Failed test with: " << '\n';
@@ -371,11 +371,11 @@ void testsPow() {
 //        for(size_t i = 0; i < N; ++i) {
 //            BigNum f(M, true);
 //            BigNum g(M, true);
-//            BigNum fPow = f.power(g);
+//            BigNum fPow = f.Power(g);
 //        }
 //        auto t2 = high_resolution_clock::now();
 //        auto ms_int = duration_cast<milliseconds>(t2 - t1);
-//        std::cout << "fastSqr: time taken for " << N << " numbers to Pow: " << ms_int.count() << '\n';
+//        std::cout << "FastSqr: time taken for " << N << " numbers to Pow: " << ms_int.count() << '\n';
 //
 //        t1 = high_resolution_clock::now();
 //        for(size_t i = 0; i < N; ++i) {
@@ -400,7 +400,7 @@ void testsPow() {
             std::cout << "Enter Pow: ";
             std::cin >> g;
 
-            std::cout << "Pow: " << f.power(g) << '\n';
+            std::cout << "Pow: " << f.Power(g) << '\n';
         }
     }
 }
@@ -477,20 +477,45 @@ void testsBarrett() {
 
 void testsFerma() {
 
-    ssize_t N = 10;
-    while (N-- > 0) {
-        BigNum num(1, true);
-        BigNum cmp("3");
+//    ssize_t N = 10;
+//    while (N-- > 0) {
+//        BigNum num(1, true);
+//        BigNum cmp("3");
+//
+//        while (num % 2 == BigNum() && num <= cmp) {
+//            num = BigNum(1, true);
+//        }
+//        std::cout << num << '\n';
+//        BigNum::TestFerma(num, 5);
+//    }
 
-        while (num % 2 == BigNum() && num <= cmp) {
-            num = BigNum(1, true);
-        }
-        std::cout << num << '\n';
-        BigNum::TestFerma(num, 5);
+    std::cout << "Test #2" << '\n';
+    BigNum num("811");
+    BigNum::TestFerma(num, 100);
+    BigNum err = num.Phi() * BigNum("100")/num;
+    float error = err.ConvertToFloat() / 100;
+    std::cout << pow(error, 100) << '\n';
+}
+
+void TestJacobi() {
+    BigNum a, n;
+    ssize_t N = 5;
+    while (N-- > 0) {
+        std::cout << "Enter a: ";
+        std::cin >> a;
+        std::cout << "Enter n: ";
+        std::cin >> n;
+
+        std::cout << BigNum::Jacobi(a, n) << '\n';
     }
 }
 
-void testsStrassen() {
+void TestPhi() {
+    BigNum num("849228304920");
+    std::cout << num.Phi() << '\n';
+}
+
+void TestsStrassen() {
     ssize_t N = 10;
     while (N-- > 0) {
         BigNum num(1, true);
@@ -500,8 +525,15 @@ void testsStrassen() {
             num = BigNum(1, true);
         }
         std::cout << num << '\n';
-        BigNum::testStrassen(num, 5);
+        BigNum::TestStrassen(num, 10);
     }
+
+    std::cout << "Test #2" << '\n';
+    BigNum num("811");
+    BigNum::TestStrassen(num, 100);
+    BigNum err = num.Phi() * BigNum("100")/num;
+    float error = err.ConvertToFloat() / 100;
+    std::cout << pow(error, 100) << '\n';
 }
 
 int main() {
@@ -513,8 +545,26 @@ int main() {
     //testsShift();
     //testsBarrett();
     //testsFastSqr();
-    testsFerma();
-//    BigNum temp;
-//    std::cin >> temp;
-//    BigNum::TestFerma(temp, 5);
+    //testsFerma();
+    //TestJacobi();
+    //TestPhi();
+    //TestsStrassen();
+
+    //test fo generatin ptime number
+//    BigNum res = BigNum::StrongGordonPrime();
+//    std::cout << res << '\n';
+//    std::cout << (BigNum::TestStrassen(res, 10) == 1 ? "This is prime" : "This is not prime") << '\n';
+
+//    BigNum n("248113963299781512916613733151690498049");
+//    //test for strassen
+//    while (true) {
+//        std::cout << BigNum::TestStrassen(n, 100) << '\n';
+//    }
+    //test for ferma
+    //std::cout << BigNum::TestFerma(n, 100) << '\n';
+
+    BigNum t("6749120");
+    BigNum m("248113963299781512916613733151690498049");
+    BigNum z("466689128243102636255574657362541798675");
+    std::cout << t.Mod(m, z) << '\n';
 }

@@ -88,9 +88,9 @@ public:
     BigNum operator%(const BigNum &other) const;
 
     //Fast sqr
-    BigNum fastSqr() const;
+    BigNum FastSqr() const;
 
-    BigNum power(const BigNum &);
+    BigNum Power(const BigNum &pow);
 
     BigNum Pow(const BigNum &pow, const BigNum &mod, const BigNum &barretZ);
 
@@ -102,12 +102,19 @@ public:
 
     friend BigNum FindZ(const BigNum &m);
 
-    static void TestFerma(const BigNum &num, size_t t);
+    static bool TestFerma(const BigNum &num, size_t t);
 
     static int Jacobi(const BigNum &a, const BigNum &n);
 
-    static void testStrassen(const BigNum &, size_t);
+    static bool TestStrassen(const BigNum &num, size_t t);
 
+    BigNum Phi();
+
+    float ConvertToFloat();
+
+    static BigNum GeneratePrimeNumber(size_t );
+
+    static BigNum StrongGordonPrime();
     ///input_Output
 
     friend std::ostream &operator<<(std::ostream &, const BigNum &);

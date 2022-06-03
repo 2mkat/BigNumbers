@@ -4,6 +4,7 @@
 #include <chrono>
 #include <algorithm>
 #include <random>
+#include <stdlib.h>
 
 static std::mt19937 &mt() {
     // initialize once per thread
@@ -41,7 +42,7 @@ BigNum::BigNum(std::string str) {
         factors_[0] = 0;
 
         size_t i = 0;
-        base_t base = 10;
+        base_t baseTemp = 10;
 
         //check argument
         for (size_t j = 0; j < lenStr; j++) {
@@ -51,7 +52,7 @@ BigNum::BigNum(std::string str) {
         }
 
         while (i < lenStr) {
-            *this = *this * base + base_t(str[i] - '0');
+            *this = *this * baseTemp + base_t(str[i] - '0');
             i++;
         }
     }
@@ -601,7 +602,7 @@ BigNum BigNum::operator%(const BigNum &other) const {
     return u;
 }
 
-BigNum BigNum::fastSqr() const {
+BigNum BigNum::FastSqr() const {
     BigNum res(2 * factors_.size() + 1); // because after ZERO-fill size will be automatically trimmed to 1
 
     for (size_t i = 0; i < factors_.size(); i++) {
@@ -631,7 +632,7 @@ BigNum BigNum::fastSqr() const {
     return res;
 }
 
-BigNum BigNum::power(const BigNum &pow) {
+BigNum BigNum::Power(const BigNum &pow) {
 //    if (!(Pow.factors_[0] & 1)) {
 //        return BigNum(0);
 //    }
@@ -649,7 +650,7 @@ BigNum BigNum::power(const BigNum &pow) {
     BigNum z = *this;
 
     for (ssize_t i = bits - 2; i >= 0; --i) {
-        z = z.fastSqr();
+        z = z.FastSqr();
         if (pow.factors_[i / BASE_SIZE] & (1 << (i % BASE_SIZE))) {
             z = z * (*this);
         }
@@ -703,22 +704,27 @@ BigNum BigNum::Mod(const BigNum &m, const BigNum &z) const {
     exp = exp.RightShift(m.factors_.size() + 1);
 
     BigNum rem1 = *this;
-    if (rem1.factors_.size() > m.factors_.size()) {
-        rem1.factors_.resize(m.factors_.size());
+    if (rem1.factors_.size() > m.factors_.size() + 1) {
+        rem1.factors_.resize(m.factors_.size() + 1);
     }
 
     BigNum rem2 = exp * m;
-    if (rem2.factors_.size() > m.factors_.size()) {
-        rem2.factors_.resize(m.factors_.size());
+    if (rem2.factors_.size() > m.factors_.size() + 1) {
+        rem2.factors_.resize(m.factors_.size() + 1);
     }
 
     BigNum res;
+    std::cout << "rem1: " << rem1 << '\n' << "rem2 " << rem2 << '\n';
     if (rem1 >= rem2) {
         res = rem1 - rem2;
     } else {
-        res.factors_.resize(m.factors_.size() + 1);
-        res.factors_[m.factors_.size()] = 1;
+        res.factors_.resize(m.factors_.size() + 2);
+        res.factors_[m.factors_.size() - 1] = 1;
+        std::cout << "pow " << '\n';
+        std::cout << "this: " << this << '\n' << "mod: " << m << '\n' <<  "z: " << z << '\n';
+        std::cout << "res: " << res << '\n' << "rem1: " << rem1 << '\n' << "rem2 " << rem2 << '\n';
         res = res + rem1 - rem2;
+        std::cout << "pow2 " << '\n';
     }
 
     while (res >= m) {
@@ -748,25 +754,26 @@ BigNum BigNum::Pow(const BigNum &pow, const BigNum &mod, const BigNum &barretZ) 
         }
         idx--;
     }
-
     BigNum z = *this;
     BigNum cmp("1");
 
     for (ssize_t i = bits - 2; i >= 0; --i) {
-        z = z.fastSqr();
-        z = z.Mod(mod, barretZ);
-        if (pow.factors_[i / BASE_SIZE] & (1 << (i % BASE_SIZE))) {
-            z = z * (*this);
+        z = z.FastSqr();
+        if (z >= mod) {
             z = z.Mod(mod, barretZ);
         }
+        if (pow.factors_[i / BASE_SIZE] & (1 << (i % BASE_SIZE))) {
+            z = z * (*this);
+            if (z >= mod) {
+                z = z.Mod(mod, barretZ);
+            }
+        }
     }
-
     return z;
 }
 
-void BigNum::TestFerma(const BigNum &num, size_t t) {
+bool BigNum::TestFerma(const BigNum &num, size_t t) {
     BigNum barretZ = FindZ(num);
-    bool flag = true;
     while (t-- > 0) {
         BigNum a(num.factors_.size(), true);
         BigNum cmp("2");
@@ -777,17 +784,16 @@ void BigNum::TestFerma(const BigNum &num, size_t t) {
         BigNum rem;
         cmp = BigNum("1");
         rem = a.Pow(num - cmp, num, barretZ);
-        //rem = rem % num;
+//        rem = a.Power(num - cmp);
+//        rem = rem % num;
 
         if (rem != cmp) {
-            std::cout << "This number is composite!" << '\n';
-            flag = false;
-            break;
+            //std::cout << "This number is composite!" << '\n';
+            return false;
         }
     }
-    if (flag) {
-        std::cout << "This number is prime" << '\n';
-    }
+    //std::cout << "This number is prime" << '\n';
+    return true;
 }
 
 int BigNum::Jacobi(const BigNum &a, const BigNum &n) {
@@ -805,7 +811,7 @@ int BigNum::Jacobi(const BigNum &a, const BigNum &n) {
         k = k + 1;
         aCopy = aCopy / 2;
     }
-    if (k % 2 == 0 && k > 0) {
+    if (k % 2 == 0) {
         s = 1;
     } else if (n % 8 == BigNum("1") || n % 8 == BigNum("7")) {
         s = 1;
@@ -825,9 +831,8 @@ int BigNum::Jacobi(const BigNum &a, const BigNum &n) {
 
 }
 
-void BigNum::testStrassen(const BigNum &num, size_t t) {
+bool BigNum::TestStrassen(const BigNum &num, size_t t) {
     BigNum barretZ = FindZ(num);
-    bool flag = true;
     while (t-- > 0) {
         BigNum a(num.factors_.size(), true);
         BigNum cmp("2");
@@ -838,17 +843,106 @@ void BigNum::testStrassen(const BigNum &num, size_t t) {
         BigNum rem;
         cmp = BigNum("1");
         rem = a.Pow((num - cmp) / 2, num, barretZ);
-
         if (rem != cmp && rem != num - cmp) {
-            std::cout << "This number is composite!" << '\n';
-            flag = false;
-            break;
+            //std::cout << "This number is composite!" << '\n';
+            return false;
+        }
+        int s;
+        s = Jacobi(a, num);
+        BigNum sCopy;
+        if (s == -1) {
+            sCopy = num - BigNum("1");
+        } else if (s == 0) {
+            sCopy = BigNum("0");
+        } else {
+            sCopy = BigNum("1");
+        }
+
+        if (rem % num != sCopy) {
+            //std::cout << "This number is composite!" << '\n';
+            return false;
         }
 
     }
-    if (flag) {
-        std::cout << "This number is prime" << '\n';
+    //std::cout << "This number is prime" << '\n';
+    return true;
+}
+
+BigNum BigNum::Phi() {
+    BigNum res = *this;
+    BigNum n = *this;
+
+    for (BigNum i = BigNum("2"); i.FastSqr() <= n; i += BigNum("1")) {
+        if (n % i == BigNum("0")) {
+            do {
+                n /= i;
+            } while (n % i == BigNum("0"));
+            res -= res / i;
+        }
     }
+
+    if (n > BigNum("1")) {
+        res -= res / n;
+    }
+    return res;
+}
+
+float BigNum::ConvertToFloat() {
+    BigNum cur = *this;
+    if (cur.factors_[0] == 0 && cur.factors_.size() == 1) {
+        return 0;
+    }
+    int j = 0;
+    base_t basis = 10;
+    std::string res;
+    while (!(cur.factors_[0] == 0 && cur.factors_.size() == 1)) {
+        BigNum temp = cur % basis;
+        res = std::to_string(temp.factors_[0]) + res;
+        cur = cur / basis;
+    }
+    return atof(res.c_str());
+}
+
+BigNum BigNum::GeneratePrimeNumber(size_t digits) {
+    while (true) {
+        BigNum prime(digits, true);
+        if (TestStrassen(prime, 10) && TestStrassen(prime, 10)) {
+            return prime;
+        }
+    }
+}
+
+BigNum BigNum::StrongGordonPrime() {
+    BigNum one("1");
+    BigNum two("2");
+
+    //Generate s and t
+    BigNum s, t, p, p0;
+    s = GeneratePrimeNumber(5);
+    t = GeneratePrimeNumber(5);
+    std::cout << s << '\n' << t << '\n';
+
+    //Random i0
+    BigNum i(1, true);
+    BigNum r;
+    while (true) {
+        r = two * i * t + one;
+        std::cout << r << '\n';
+        if (TestStrassen(r, 100) && TestFerma(r, 100)) {
+            break;
+        }
+        i = i + one;
+    }
+
+    p0 = two * s.Mod(r - two, r) * s - one;
+    BigNum j(1, true);
+    while (true) {
+        p = two * i * r * s + p0;
+        if (TestStrassen(r, 100) && TestFerma(r, 100)) break;
+        i = i + one;
+    }
+
+    return p;
 }
 
 std::istream &operator>>(std::istream &in, BigNum &c1) {
